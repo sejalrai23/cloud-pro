@@ -1,19 +1,20 @@
-const express = require('express');
-const mongoose = require('mongoose');
-const env=require('dotenv');
-const users = require('./routes/api/users');
-const boards = require('./routes/api/boards');
-const taskLists = require('./routes/api/taskLists');
-const tasks = require('./routes/api/tasks');
-const auth = require('./routes/api/auth');
-const config = require('./config/configs');
-const logger = require('./utilities/logger');
-const cors = require('cors');
+const express = require("express");
+const mongoose = require("mongoose");
+const env = require("dotenv");
+const users = require("./routes/api/users");
+const boards = require("./routes/api/boards");
+const taskLists = require("./routes/api/taskLists");
+const tasks = require("./routes/api/tasks");
+const auth = require("./routes/api/auth");
+const config = require("./config/configs");
+const logger = require("./utilities/logger");
+const cors = require("cors");
+const path = require("path");
 
 const app = express();
 const port = 5000;
 env.config();
-app.use('/uploads', express.static('uploads'));
+app.use("/uploads", express.static("uploads"));
 // Cors middleware
 app.use(cors());
 
@@ -25,23 +26,30 @@ app.use(express.json());
 //     .then(()=> console.log('MongoDB Connected'))
 //     .catch(error => console.log(error));
 
-    mongoose.connect(
+mongoose
+    .connect(
         `mongodb+srv://root:root123@cluster0.wfrxg.mongodb.net/task?retryWrites=true&w=majority`,
         { useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex: true }
-    ).then(() => {
+    )
+    .then(() => {
         console.log("database connected");
     });
 
 // Use Routes
-app.use('/api/auth', auth);
-app.use('/api/users', users);
-app.use('/api/boards', boards);
-app.use('/api/tasklists', taskLists);
-app.use('/api/tasks', tasks);
+app.use("/api/auth", auth);
+app.use("/api/users", users);
+app.use("/api/boards", boards);
+app.use("/api/tasklists", taskLists);
+app.use("/api/tasks", tasks);
 
+if (process.env.NODE_ENV === "production") {
+    app.use(express.static(path.join(__dirname, "client/build")));
+    app.get("*", (req, res) => {
+        res.sendfile(path.join((__dirname = "client/build/index.html")));
+    });
+}
 
 // Start Server
-app.listen(port, ()=> {
+app.listen(port, () => {
     console.log(`Server started on ${port}`);
-})
-
+});
